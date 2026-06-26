@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PokerTime — Poker Gadgets</title>
+<style>
+  :root{
+    --bg:#0b1410;
+    --bg2:#102019;
+    --panel:#152822;
+    --panel2:#1c3329;
+    --line:#264a3d;
+    --ink:#e8f3ec;
+    --muted:#8eaa9a;
+    --accent:#26d07c;
+    --accent2:#ffd166;
+    --danger:#ff5d6c;
+    --chip:#ef476f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:radial-gradient(1200px 800px at 70% -10%,#1a3a2c 0%,var(--bg) 60%) fixed;color:var(--ink);font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:18px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0e1d17,#0b1410)}
+  header h1{margin:0;font-size:20px;letter-spacing:.3px}
+  header .logo{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff 0 6%,var(--chip) 7% 60%,#7a1c30 61% 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.4)}
+  header .sub{color:var(--muted);font-size:12px;margin-left:auto}
+  nav.tabs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  nav.tabs button{background:transparent;color:var(--muted);border:1px solid transparent;padding:8px 14px;border-radius:999px;cursor:pointer;font-weight:600}
+  nav.tabs button.active{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+  nav.tabs button:hover{color:var(--ink)}
+  main{padding:18px;max-width:1100px;margin:0 auto}
+  .panel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  .panel.active{display:block}
+  h2{margin:0 0 14px;font-size:18px;display:flex;align-items:center;gap:10px}
+  h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .grid{display:grid;gap:14px}
+  .grid.cols2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .grid.cols3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+  input,select,textarea,button{font:inherit}
+  input[type=number],input[type=text],select,textarea{
+    width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--ink);
+    padding:9px 11px;border-radius:8px;outline:none
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  .btn{background:var(--accent);color:#06120c;border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  .btn.danger{background:var(--danger);color:#fff}
+  .btn.warn{background:var(--accent2);color:#3a2700}
+  .btn+.btn{margin-left:8px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+  tr.current{background:rgba(38,208,124,.12)}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:12px}
+
+  /* Timer */
+  .timerWrap{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+  @media(max-width:760px){.timerWrap{grid-template-columns:1fr}}
+  .clock{
+    background:linear-gradient(180deg,#0d1f17,#0a1812);
+    border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;position:relative;overflow:hidden
+  }
+  .clock .level{color:var(--muted);font-size:13px;letter-spacing:.6px;text-transform:uppercase}
+  .clock .blinds{font-size:42px;font-weight:800;margin:6px 0 4px;color:var(--accent2)}
+  .clock .time{font-size:96px;font-weight:800;letter-spacing:2px;line-height:1;font-variant-numeric:tabular-nums;margin:8px 0;text-shadow:0 4px 20px rgba(38,208,124,.25)}
+  .clock.warn .time{color:var(--accent2)}
+  .clock.danger .time{color:var(--danger);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.55}}
+  .clock .next{color:var(--muted);font-size:13px;margin-top:6px}
+  .ctrls{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .meta{display:flex;justify-content:space-between;gap:14px;margin-top:14px;color:var(--muted);font-size:12px}
+  .levelsTbl{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+
+  /* Chip distribution chips */
+  .chiprow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .swatch{width:18px;height:18px;border-radius:50%;border:2px dashed rgba(255,255,255,.85);box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+  .help{color:var(--muted);font-size:12px;margin-top:6px}
+
+  /* odds */
+  .cards{display:flex;gap:6px;flex-wrap:wrap}
+  .card{
+    width:44px;height:60px;border-radius:6px;background:#fff;color:#111;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);user-select:none
+  }
+  .card.red{color:#c0223a}
+  .card.placeholder{background:transparent;border:1px dashed var(--line);color:var(--muted);box-shadow:none}
+  .deckPick{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;margin-top:8px}
+  .deckPick button{padding:6px 0;background:#fff;color:#111;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px}
+  .deckPick button.red{color:#c0223a}
+  .deckPick button.used{opacity:.25;cursor:not-allowed}
+  .suitTabs{display:flex;gap:6px;margin-top:8px}
+  .suitTabs button{padding:6px 10px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:6px;cursor:pointer}
+  .suitTabs button.active{background:var(--accent);color:#06120c;border-color:var(--accent)}
+
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg2);padding:2px 6px;border-radius:4px;border:1px solid var(--line);font-size:12px;color:var(--muted)}
+  footer{padding:18px;text-align:center;color:var(--muted);font-size:12px}
+  .bigStat{font-size:30px;font-weight:800;color:var(--accent)}
+  .bigStat.alt{color:var(--accent2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" aria-hidden="true"></div>
+  <h1>PokerTime — Home Game Gadgets</h1>
+  <div class="sub">All in one page. No internet required.</div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="timer" class="active">⏱ Blinds Timer</button>
+  <button data-tab="structure">📐 Structure Builder</button>
+  <button data-tab="chips">🟣 Chip Distribution</button>
+  <button data-tab="icm">💰 ICM / Payouts</button>
+  <button data-tab="odds">🎲 Hand Odds</button>
+  <button data-tab="bankroll">📈 Bankroll & M/Q</button>
+</nav>
+
+<main>
+
+<!-- ============== TIMER ============== -->
+<section id="timer" class="panel active">
+  <h2><span class="dot"></span>Blinds Timer</h2>
+  <div class="timerWrap">
+    <div>
+      <div class="clock" id="clock">
+        <div class="level" id="lvlLabel">LEVEL 1</div>
+        <div class="blinds" id="blindsLabel">25 / 50</div>
+        <div class="time" id="timeLabel">20:00</div>
+        <div class="next" id="nextLabel">Next: 50 / 100 (ante 0)</div>
+        <div class="ctrls">
+          <button class="btn" id="btnStart">Start</button>
+          <button class="btn secondary" id="btnPause">Pause</button>
+          <button class="btn secondary" id="btnPrev">◀ Prev</button>
+          <button class="btn secondary" id="btnNext">Next ▶</button>
+          <button class="btn warn" id="btnReset">Reset</button>
+        </div>
+        <div class="meta">
+          <span>Elapsed total: <b id="totalElapsed">00:00</b></span>
+          <span><span class="kbd">Space</span> start/pause · <span class="kbd">→</span> next · <span class="kbd">←</span> prev</span>
+        </div>
+      </div>
+
+      <div class="grid cols2" style="margin-top:14px">
+        <div>
+          <label>Sound on level change</label>
+          <select id="soundSel">
+            <option value="bell">Bell</option>
+            <option value="chime">Chime</option>
+            <option value="beep" selected>Beep</option>
+            <option value="off">Off</option>
+          </select>
+        </div>
+        <div>
+          <label>Warning at (seconds left)</label>
+          <input type="number" id="warnSec" value="60" min="0" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label>Levels</label>
+      <div class="levelsTbl">
+        <table>
+          <thead><tr><th>#</th><th>SB</th><th>BB</th><th>Ante</th><th>Min</th></tr></thead>
+          <tbody id="levelsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== STRUCTURE BUILDER ============== -->
+<section id="structure" class="panel">
+  <h2><span class="dot"></span>Blind Structure Builder</h2>
+  <div class="grid cols3">
+    <div><label>Players</label><input type="number" id="sPlayers" value="8" min="2"></div>
+    <div><label>Starting Stack</label><input type="number" id="sStack" value="10000" min="100" step="100"></div>
+    <div><label>Target Duration (min)</label><input type="number" id="sDur" value="180" min="30" step="15"></div>
+    <div><label>Level Length (min)</label><input type="number" id="sLevel" value="20" min="5"></div>
+    <div><label>Starting BB</label><input type="number" id="sBB" value="50" min="2" step="2"></div>
+    <div><label>Antes start at level</label><input type="number" id="sAnte" value="5" min="0"></div>
+    <div><label>Break every N levels</label><input type="number" id="sBreak" value="4" min="0"></div>
+    <div><label>Break length (min)</label><input type="number" id="sBreakLen" value="10" min="0"></div>
+    <div style="display:flex;align-items:end;gap:8px">
+      <button class="btn" id="genBtn">Generate</button>
+      <button class="btn secondary" id="useBtn">Use in Timer</button>
+    </div>
+  </div>
+  <div id="sSummary" class="help" style="margin-top:10px"></div>
+  <div class="levelsTbl" style="margin-top:12px;max-height:540px">
+    <table>
+      <thead><tr><th>#</th><th>SB</th><th>BB</th><th>Ante</th><th>Min</th><th>Avg Stack (BB)</th></tr></thead>
+      <tbody id="sLevels"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============== CHIP DISTRIBUTION ============== -->
+<section id="chips" class="panel">
+  <h2><span class="dot"></span>Chip Distribution</h2>
+  <p class="help">Enter how many chips you own of each color and the starting stack you want — we'll suggest a fair denomination and distribution per player.</p>
+  <div class="grid cols2">
+    <div>
+      <div id="chipRows"></div>
+      <button class="btn secondary" id="addChip">+ Add Color</button>
+    </div>
+    <div>
+      <div class="grid cols2">
+        <div><label>Players</label><input type="number" id="cPlayers" value="8" min="2"></div>
+        <div><label>Target Starting Stack</label><input type="number" id="cStack" value="10000" min="100" step="100"></div>
+      </div>
+      <button class="btn" id="cCalc" style="margin-top:10px">Calculate Distribution</button>
+      <div id="cResult" style="margin-top:14px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ICM ============== -->
+<section id="icm" class="panel">
+  <h2><span class="dot"></span>ICM / Payout Calculator</h2>
+  <p class="help">Enter chip stacks (one per line) and prize payouts (one per line). Computes ICM equity (Malmuth–Harville) for each stack.</p>
+  <div class="grid cols2">
+    <div>
+      <label>Chip stacks (one per line)</label>
+      <textarea id="icmStacks" rows="8">12000
+9000
+6000
+3000</textarea>
+    </div>
+    <div>
+      <label>Prize structure (one per line, total = prize pool)</label>
+      <textarea id="icmPrizes" rows="8">500
+300
+150
+50</textarea>
+    </div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="icmCalc">Calculate ICM</button>
+    <span class="pill" id="icmTotal"></span>
+  </div>
+  <table style="margin-top:12px" id="icmTbl">
+    <thead><tr><th>Seat</th><th>Stack</th><th>% Chips</th><th>$ Equity</th><th>$/1k chips</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- ============== ODDS ============== -->
+<section id="odds" class="panel">
+  <h2><span class="dot"></span>Texas Hold'em Hand Odds</h2>
+  <p class="help">Pick your hole cards and (optionally) board cards, then Monte-Carlo simulate vs random opponents.</p>
+  <div class="grid cols3">
+    <div>
+      <label>Your hand</label>
+      <div class="cards" id="heroCards"></div>
+    </div>
+    <div>
+      <label>Board</label>
+      <div class="cards" id="boardCards"></div>
+    </div>
+    <div>
+      <label>Opponents</label>
+      <input type="number" id="oppN" value="1" min="1" max="8">
+      <label style="margin-top:8px">Simulations</label>
+      <select id="simN">
+        <option value="2000">2,000 (fast)</option>
+        <option value="10000" selected>10,000 (good)</option>
+        <option value="50000">50,000 (slow, accurate)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="suitTabs" id="suitTabs">
+    <button data-suit="♠" class="active">♠ Spades</button>
+    <button data-suit="♥">♥ Hearts</button>
+    <button data-suit="♦">♦ Diamonds</button>
+    <button data-suit="♣">♣ Clubs</button>
+    <span class="pill" id="pickInfo" style="margin-left:auto">Picking: Hero card 1</span>
+  </div>
+  <div class="deckPick" id="deckPick"></div>
+
+  <div class="row" style="margin-top:14px">
+    <button class="btn" id="simBtn">Simulate</button>
+    <button class="btn secondary" id="clearCards">Clear</button>
+  </div>
+  <div class="grid cols3" style="margin-top:14px">
+    <div><label>Win %</label><div class="bigStat" id="winPct">—</div></div>
+    <div><label>Tie %</label><div class="bigStat alt" id="tiePct">—</div></div>
+    <div><label>Lose %</label><div class="bigStat" id="losePct" style="color:var(--danger)">—</div></div>
+  </div>
+</section>
+
+<!-- ============== BANKROLL & M/Q ============== -->
+<section id="bankroll" class="panel">
+  <h2><span class="dot"></span>Stack Health (M / Q) & Pot Odds</h2>
+  <div class="grid cols2">
+    <div>
+      <h3 style="margin:0 0 10px">M-Ratio & Q-Ratio</h3>
+      <div class="grid cols2">
+        <div><label>Your stack</label><input type="number" id="mStack" value="12000"></div>
+        <div><label>SB</label><input type="number" id="mSB" value="100"></div>
+        <div><label>BB</label><input type="number" id="mBB" value="200"></div>
+        <div><label>Ante</label><input type="number" id="mAnte" value="25"></div>
+        <div><label>Players at table</label><input type="number" id="mPlayers" value="9"></div>
+        <div><label>Avg stack at table</label><input type="number" id="mAvg" value="10000"></div>
+      </div>
+      <button class="btn" id="mCalc" style="margin-top:10px">Calculate</button>
+      <div id="mOut" style="margin-top:12px"></div>
+    </div>
+    <div>
+      <h3 style="margin:0 0 10px">Pot Odds & Required Equity</h3>
+      <div class="grid cols2">
+        <div><label>Pot before call</label><input type="number" id="pPot" value="100"></div>
+        <div><label>Amount to call</label><input type="number" id="pCall" value="25"></div>
+        <div><label>Outs (optional)</label><input type="number" id="pOuts" value="9"></div>
+        <div><label>Cards to come</label>
+          <select id="pCards"><option value="1">1 (turn→river)</option><option value="2" selected>2 (flop→river)</option></select>
+        </div>
+      </div>
+      <button class="btn" id="pCalc" style="margin-top:10px">Calculate</button>
+      <div id="pOut" style="margin-top:12px"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>Built for kitchen-table tournaments. Open this file anywhere — works fully offline.</footer>
+
+<script>
+/* ============ TAB SWITCH ============ */
+const tabs = document.getElementById('tabs');
+tabs.addEventListener('click', e=>{
+  const b = e.target.closest('button[data-tab]'); if(!b) return;
+  [...tabs.children].forEach(x=>x.classList.toggle('active', x===b));
+  document.querySelectorAll('main > .panel').forEach(p=>p.classList.toggle('active', p.id===b.dataset.tab));
+});
+
+/* ============ BLINDS TIMER ============ */
+const defaultLevels = [
+  [25,50,0,20],[50,100,0,20],[75,150,0,20],[100,200,25,20],
+  [150,300,25,20],[200,400,50,20],[300,600,75,20],
+  [-1,-1,-1,10], // break
+  [400,800,100,20],[500,1000,100,20],[600,1200,200,20],[800,1600,200,20],
+  [1000,2000,300,20],[1500,3000,400,20],[2000,4000,500,20],[3000,6000,1000,20]
+];
+let levels = JSON.parse(JSON.stringify(defaultLevels));
+let curLevel = 0, secLeft = levels[0][3]*60, running=false, totalSec=0, tickHandle=null;
+
+function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
+function isBreak(l){return l[0]===-1}
+function paintLevels(){
+  const tb=document.getElementById('levelsBody'); tb.innerHTML='';
+  levels.forEach((l,i)=>{
+    const tr=document.createElement('tr'); if(i===curLevel) tr.className='current';
+    if(isBreak(l)) tr.innerHTML=`<td>${i+1}</td><td colspan="3" style="color:var(--accent2)">— BREAK —</td><td>${l[3]}</td>`;
+    else tr.innerHTML=`<td>${i+1}</td><td>${l[0]}</td><td>${l[1]}</td><td>${l[2]}</td><td>${l[3]}</td>`;
+    tb.appendChild(tr);
+  });
+}
+function paintClock(){
+  const lvl=levels[curLevel];
+  document.getElementById('lvlLabel').textContent = isBreak(lvl) ? 'BREAK' : ('LEVEL '+(curLevel+1));
+  document.getElementById('blindsLabel').textContent = isBreak(lvl) ? '☕' : (lvl[0]+' / '+lvl[1]+(lvl[2]?(' · ante '+lvl[2]):''));
+  document.getElementById('timeLabel').textContent = fmt(secLeft);
+  document.getElementById('totalElapsed').textContent = fmt(totalSec);
+  const nxt = levels[curLevel+1];
+  document.getElementById('nextLabel').textContent = nxt ? ('Next: ' + (isBreak(nxt) ? 'Break ('+nxt[3]+'m)' : (nxt[0]+' / '+nxt[1]+' · ante '+nxt[2]))) : 'Last level';
+  const clk = document.getElementById('clock');
+  clk.classList.toggle('warn', secLeft<= (+document.getElementById('warnSec').value||60) && secLeft>10);
+  clk.classList.toggle('danger', secLeft<=10);
+  paintLevels();
+}
+function tick(){
+  if(!running) return;
+  secLeft--; totalSec++;
+  if(secLeft<=0){ playSound(); nextLevel(); }
+  paintClock();
+}
+function nextLevel(){
+  if(curLevel<levels.length-1){ curLevel++; secLeft=levels[curLevel][3]*60; }
+  else{ running=false; clearInterval(tickHandle); }
+}
+function prevLevel(){
+  if(curLevel>0){ curLevel--; }
+  secLeft=levels[curLevel][3]*60; paintClock();
+}
+function reset(){ running=false; clearInterval(tickHandle); curLevel=0; totalSec=0; secLeft=levels[0][3]*60; paintClock(); }
+document.getElementById('btnStart').onclick=()=>{ if(running)return; running=true; clearInterval(tickHandle); tickHandle=setInterval(tick,1000); };
+document.getElementById('btnPause').onclick=()=>{ running=false; clearInterval(tickHandle); };
+document.getElementById('btnNext').onclick=()=>{ nextLevel(); paintClock(); };
+document.getElementById('btnPrev').onclick=prevLevel;
+document.getElementById('btnReset').onclick=reset;
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if(e.code==='Space'){ e.preventDefault(); running?document.getElementById('btnPause').click():document.getElementById('btnStart').click(); }
+  if(e.code==='ArrowRight'){ nextLevel(); paintClock(); }
+  if(e.code==='ArrowLeft'){ prevLevel(); }
+});
+function playSound(){
+  const t=document.getElementById('soundSel').value; if(t==='off')return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    const freq=t==='bell'?880:t==='chime'?660:520;
+    o.frequency.value=freq; o.type=t==='beep'?'square':'sine';
+    g.gain.setValueAtTime(.0001,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.3,ctx.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+1.2);
+    o.start(); o.stop(ctx.currentTime+1.3);
+  }catch{}
+}
+paintClock();
+
+/* ============ STRUCTURE BUILDER ============ */
+function genStructure(){
+  const players=+sPlayers.value, stack=+sStack.value, dur=+sDur.value, len=+sLevel.value;
+  let bb=+sBB.value, anteFrom=+sAnte.value, breakEvery=+sBreak.value, breakLen=+sBreakLen.value;
+  const totalChips=players*stack;
+  const nLevels=Math.max(6, Math.round(dur/len));
+  // target final BB ~ totalChips / 10 so blinds end at ~10BB avg
+  const targetEndBB = totalChips/10;
+  const growth = Math.pow(targetEndBB/bb, 1/(nLevels-1));
+  const out=[]; let lvl=bb;
+  const niceSteps=[1,2,2.5,3,4,5,6,8];
+  function nice(v){
+    if(v<10) return Math.max(2, Math.round(v));
+    const mag=Math.pow(10,Math.floor(Math.log10(v)));
+    let best=mag, diff=1e18;
+    for(const s of niceSteps){
+      for(let k=-1;k<=1;k++){
+        const cand = s*mag*Math.pow(10,k);
+        const d=Math.abs(cand-v);
+        if(d<diff){diff=d; best=cand;}
+      }
+    }
+    return Math.round(best);
+  }
+  for(let i=0;i<nLevels;i++){
+    const bbv=nice(lvl);
+    const sbv=Math.max(1, Math.round(bbv/2));
+    const ante = i+1>=anteFrom ? Math.round(bbv*0.125/5)*5 || Math.round(bbv*0.125) : 0;
+    out.push([sbv,bbv,ante,len]);
+    if(breakEvery>0 && (i+1)%breakEvery===0 && i<nLevels-1) out.push([-1,-1,-1,breakLen]);
+    lvl*=growth;
+  }
+  const tb=document.getElementById('sLevels'); tb.innerHTML='';
+  out.forEach((l,i)=>{
+    const tr=document.createElement('tr');
+    if(isBreak(l)) tr.innerHTML=`<td>${i+1}</td><td colspan="3" style="color:var(--accent2)">— BREAK —</td><td>${l[3]}</td><td>—</td>`;
+    else{
+      const avgBB = totalChips / Math.max(1,players) / l[1];
+      tr.innerHTML=`<td>${i+1}</td><td>${l[0]}</td><td>${l[1]}</td><td>${l[2]||'—'}</td><td>${l[3]}</td><td>${avgBB.toFixed(1)}</td>`;
+    }
+    tb.appendChild(tr);
+  });
+  const playMin = out.reduce((a,l)=>a+l[3],0);
+  document.getElementById('sSummary').textContent =
+    `${out.length} rows · ~${playMin} minutes · ${totalChips.toLocaleString()} chips in play · final BB ≈ ${out[out.length-1][1].toLocaleString()}`;
+  document.getElementById('sLevels').dataset.payload = JSON.stringify(out);
+}
+document.getElementById('genBtn').onclick=genStructure;
+document.getElementById('useBtn').onclick=()=>{
+  const data=document.getElementById('sLevels').dataset.payload; if(!data) return;
+  levels=JSON.parse(data); reset();
+  document.querySelector('nav.tabs button[data-tab=timer]').click();
+};
+
+/* ============ CHIP DISTRIBUTION ============ */
+const chipColors=[
+  {color:'#ffffff', name:'White', count:200, denom:25},
+  {color:'#ef476f', name:'Red',   count:200, denom:100},
+  {color:'#118ab2', name:'Blue',  count:100, denom:500},
+  {color:'#06d6a0', name:'Green', count:50,  denom:1000},
+  {color:'#3a3a3a', name:'Black', count:25,  denom:5000},
+];
+function paintChips(){
+  const wrap=document.getElementById('chipRows'); wrap.innerHTML='';
+  chipColors.forEach((c,i)=>{
+    const row=document.createElement('div'); row.className='chiprow';
+    row.innerHTML=`
+      <span class="swatch" style="background:${c.color}"></span>
+      <input type="text" value="${c.name}" style="flex:1;min-width:90px" data-k="name">
+      <input type="number" value="${c.count}" style="width:90px" data-k="count" title="Total chips you own">
+      <input type="number" value="${c.denom}" style="width:90px" data-k="denom" title="Denomination">
+      <button class="btn danger" style="padding:6px 10px" data-rm="${i}">×</button>`;
+    row.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input',()=>{
+        const k=inp.dataset.k; chipColors[i][k]=k==='name'?inp.value:(+inp.value||0);
+      });
+    });
+    row.querySelector('button').onclick=()=>{ chipColors.splice(i,1); paintChips(); };
+    wrap.appendChild(row);
+  });
+}
+document.getElementById('addChip').onclick=()=>{
+  chipColors.push({color:'#888',name:'New',count:50,denom:25}); paintChips();
+};
+document.getElementById('cCalc').onclick=()=>{
+  const players=+document.getElementById('cPlayers').value;
+  const stack=+document.getElementById('cStack').value;
+  const sorted=[...chipColors].sort((a,b)=>a.denom-b.denom);
+  // Heuristic: ~40% smallest, ~30% next, then decreasing. Cap by available chips.
+  const targetRatios=[0.4,0.3,0.18,0.08,0.04,0.02,0.01,0.01];
+  let out=sorted.map((c,i)=>({...c, per:0}));
+  // budget per player
+  function feasible(plan){
+    return plan.every((c,i)=> c.per*players <= c.count);
+  }
+  // iterate
+  let stackBudget=stack;
+  for(let i=0;i<out.length;i++){
+    const ratio = targetRatios[i] ?? 0.01;
+    let want = Math.floor((stack*ratio)/out[i].denom);
+    if(want<1 && i<2) want=1;
+    const maxAvail=Math.floor(out[i].count/players);
+    out[i].per=Math.max(0,Math.min(want,maxAvail));
+  }
+  // Adjust to hit exact stack: fill with highest denom that fits and has supply
+  let cur = out.reduce((a,c)=>a+c.per*c.denom,0);
+  // first cut down if over
+  for(let i=out.length-1;i>=0 && cur>stack;i--){
+    while(out[i].per>0 && cur>stack){ out[i].per--; cur-=out[i].denom; }
+  }
+  // add up from largest that fits
+  let safety=2000;
+  while(cur<stack && safety-- >0){
+    let added=false;
+    for(let i=out.length-1;i>=0;i--){
+      if(out[i].denom<=stack-cur && (out[i].per+1)*players<=out[i].count){
+        out[i].per++; cur+=out[i].denom; added=true; break;
+      }
+    }
+    if(!added) break;
+  }
+  const total = out.reduce((a,c)=>a+c.per*c.denom,0);
+  let html=`<table><thead><tr><th>Color</th><th>Denom</th><th>Per Player</th><th>Used</th><th>Remaining</th></tr></thead><tbody>`;
+  out.forEach(c=>{
+    html+=`<tr><td><span class="swatch" style="background:${c.color};display:inline-block;vertical-align:middle;margin-right:6px"></span>${c.name}</td>
+      <td>${c.denom}</td><td>${c.per}</td><td>${c.per*players}</td><td>${c.count - c.per*players}</td></tr>`;
+  });
+  html+=`</tbody></table>
+   <p class="help">Each player starts with <b style="color:var(--accent)">${total.toLocaleString()}</b> chips. Target was ${stack.toLocaleString()}.
+   ${total!==stack?'<br>⚠ Could not exactly match target — closest feasible distribution shown.':''}</p>`;
+  document.getElementById('cResult').innerHTML=html;
+};
+paintChips();
+
+/* ============ ICM (Malmuth–Harville) ============ */
+function icm(stacks,prizes){
+  const n=stacks.length, p=prizes.length;
+  const equity=stacks.map(_=>0);
+  // Recursive enumeration of finish orders for top p positions
+  function recur(remaining, place, multiplier){
+    if(place===p || remaining.length===0) return;
+    const tot=remaining.reduce((a,i)=>a+stacks[i],0);
+    if(tot<=0) return;
+    for(const i of remaining){
+      const pr=stacks[i]/tot;
+      equity[i]+= pr*multiplier*prizes[place];
+      recur(remaining.filter(x=>x!==i), place+1, multiplier*pr);
+    }
+  }
+  recur(stacks.map((_,i)=>i),0,1);
+  return equity;
+}
+document.getElementById('icmCalc').onclick=()=>{
+  const stacks=document.getElementById('icmStacks').value.split(/\s+/).filter(Boolean).map(Number).filter(x=>x>0);
+  const prizes=document.getElementById('icmPrizes').value.split(/\s+/).filter(Boolean).map(Number).filter(x=>x>=0);
+  if(!stacks.length||!prizes.length){ alert('Enter stacks & prizes'); return; }
+  if(stacks.length>10){ alert('ICM enumeration limited to 10 players for performance.'); return; }
+  const eq=icm(stacks,prizes);
+  const totalChips=stacks.reduce((a,b)=>a+b,0), pool=prizes.reduce((a,b)=>a+b,0);
+  document.getElementById('icmTotal').textContent=`Pool: $${pool.toLocaleString()} · Chips: ${totalChips.toLocaleString()}`;
+  const tb=document.querySelector('#icmTbl tbody'); tb.innerHTML='';
+  stacks.forEach((s,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${s.toLocaleString()}</td><td>${(s/totalChips*100).toFixed(2)}%</td>
+                  <td>$${eq[i].toFixed(2)}</td><td>$${(eq[i]/s*1000).toFixed(2)}</td>`;
+    tb.appendChild(tr);
+  });
+};
+
+/* ============ HAND ODDS ============ */
+const SUITS=['♠','♥','♦','♣']; const RANKS=['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
+const RANK_VAL=Object.fromEntries(RANKS.map((r,i)=>[r,i+2]));
+let curSuit='♠'; let usedCards=new Set(); let heroSlots=[null,null]; let boardSlots=[null,null,null,null,null];
+function isRed(s){return s==='♥'||s==='♦'}
+function paintSlots(){
+  const h=document.getElementById('heroCards'), b=document.getElementById('boardCards');
+  h.innerHTML=''; b.innerHTML='';
+  for(let i=0;i<2;i++) h.appendChild(slot(heroSlots[i],'hero',i));
+  for(let i=0;i<5;i++) b.appendChild(slot(boardSlots[i],'board',i));
+  updatePickInfo();
+}
+function slot(card,kind,idx){
+  const d=document.createElement('div');
+  if(!card){ d.className='card placeholder'; d.textContent='+'; }
+  else{ d.className='card'+(isRed(card[1])?' red':''); d.textContent=card[0]+card[1]; }
+  d.onclick=()=>{ if(card){ usedCards.delete(card); if(kind==='hero') heroSlots[idx]=null; else boardSlots[idx]=null; paintSlots(); paintDeck(); } };
+  return d;
+}
+function updatePickInfo(){
+  let info='Picking: ';
+  const hi=heroSlots.findIndex(x=>!x);
+  if(hi>=0) info+='Hero card '+(hi+1);
+  else{ const bi=boardSlots.findIndex(x=>!x); info+= bi>=0?('Board card '+(bi+1)):'Board complete'; }
+  document.getElementById('pickInfo').textContent=info;
+}
+function paintDeck(){
+  const d=document.getElementById('deckPick'); d.innerHTML='';
+  RANKS.forEach(r=>{
+    const card=r+curSuit;
+    const b=document.createElement('button');
+    b.textContent=r+curSuit; if(isRed(curSuit)) b.className='red';
+    if(usedCards.has(card)){ b.classList.add('used'); b.disabled=true; }
+    b.onclick=()=>{
+      const hi=heroSlots.findIndex(x=>!x);
+      if(hi>=0) heroSlots[hi]=card;
+      else{ const bi=boardSlots.findIndex(x=>!x); if(bi>=0) boardSlots[bi]=card; else return; }
+      usedCards.add(card); paintSlots(); paintDeck();
+    };
+    d.appendChild(b);
+  });
+}
+document.getElementById('suitTabs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-suit]'); if(!b) return;
+  curSuit=b.dataset.suit;
+  document.querySelectorAll('#suitTabs button').forEach(x=>x.classList.toggle('active',x===b));
+  paintDeck();
+});
+document.getElementById('clearCards').onclick=()=>{ heroSlots=[null,null]; boardSlots=[null,null,null,null,null]; usedCards.clear(); paintSlots(); paintDeck(); };
+
+/* 5-card eval: returns integer score; higher = better */
+function evalBest(cards){ // cards = 5..7
+  let best=-1;
+  const n=cards.length;
+  const idx=[0,1,2,3,4];
+  if(n===5){ return rank5(cards); }
+  // choose 5 of n
+  function pick(start,arr){
+    if(arr.length===5){ const s=rank5(arr); if(s>best) best=s; return; }
+    for(let i=start;i<n;i++){ arr.push(cards[i]); pick(i+1,arr); arr.pop(); }
+  }
+  pick(0,[]); return best;
+}
+function rank5(cards){
+  const ranks=cards.map(c=>RANK_VAL[c[0]]).sort((a,b)=>b-a);
+  const suits=cards.map(c=>c[1]);
+  const flush = suits.every(s=>s===suits[0]);
+  // straight
+  const uniq=[...new Set(ranks)];
+  let straight=false, top=0;
+  if(uniq.length===5){
+    if(uniq[0]-uniq[4]===4){ straight=true; top=uniq[0]; }
+    else if(uniq.join(',')==='14,5,4,3,2'){ straight=true; top=5; }
+  }
+  // counts
+  const cnt={}; ranks.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  const groups=Object.entries(cnt).map(([r,c])=>[+r,c]).sort((a,b)=> b[1]-a[1] || b[0]-a[0]);
+  const counts=groups.map(g=>g[1]).join('');
+  const kickers=groups.map(g=>g[0]);
+  let cat=0;
+  if(straight&&flush) cat=8;
+  else if(counts==='41') cat=7;
+  else if(counts==='32') cat=6;
+  else if(flush) cat=5;
+  else if(straight) cat=4;
+  else if(counts==='311') cat=3;
+  else if(counts==='221') cat=2;
+  else if(counts==='2111') cat=1;
+  else cat=0;
+  // encode: cat * 16^5 + kickers
+  let v=cat;
+  if(straight&&flush) return cat*Math.pow(16,5)+top;
+  if(cat===4) return cat*Math.pow(16,5)+top;
+  for(const k of kickers){ v=v*16+k; }
+  return v;
+}
+function buildDeck(){
+  const d=[]; for(const r of RANKS) for(const s of SUITS) d.push(r+s); return d;
+}
+function shuffleInPlace(a){
+  for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; }
+}
+document.getElementById('simBtn').onclick=()=>{
+  if(heroSlots.some(x=>!x)){ alert('Pick your 2 hole cards first'); return; }
+  const opp=+document.getElementById('oppN').value;
+  const sims=+document.getElementById('simN').value;
+  const board=boardSlots.filter(Boolean);
+  const dead=new Set([...heroSlots, ...board]);
+  const deck0=buildDeck().filter(c=>!dead.has(c));
+  let wins=0,ties=0,loses=0;
+  const t0=performance.now();
+  for(let s=0;s<sims;s++){
+    const deck=deck0.slice(); shuffleInPlace(deck);
+    let p=0;
+    const opps=[];
+    for(let i=0;i<opp;i++){ opps.push([deck[p++],deck[p++]]); }
+    const need=5-board.length;
+    const fullBoard=board.concat(deck.slice(p,p+need));
+    const hero=evalBest([...heroSlots,...fullBoard]);
+    let best=-1; for(const o of opps){ const e=evalBest([...o,...fullBoard]); if(e>best) best=e; }
+    if(hero>best) wins++;
+    else if(hero===best) ties++;
+    else loses++;
+  }
+  const total=wins+ties+loses;
+  document.getElementById('winPct').textContent=(wins/total*100).toFixed(1)+'%';
+  document.getElementById('tiePct').textContent=(ties/total*100).toFixed(1)+'%';
+  document.getElementById('losePct').textContent=(loses/total*100).toFixed(1)+'%';
+};
+paintSlots(); paintDeck();
+
+/* ============ BANKROLL & POT ODDS ============ */
+document.getElementById('mCalc').onclick=()=>{
+  const stack=+mStack.value, sb=+mSB.value, bb=+mBB.value, ante=+mAnte.value, players=+mPlayers.value, avg=+mAvg.value;
+  const cost = sb+bb+ante*players;
+  const M = stack/cost;
+  const Q = stack/avg;
+  let zone='';
+  if(M>=20) zone='Green — full play';
+  else if(M>=10) zone='Yellow — selective aggression';
+  else if(M>=6) zone='Orange — restealing zone';
+  else if(M>=1) zone='Red — push/fold';
+  else zone='Dead — shove anything';
+  document.getElementById('mOut').innerHTML=`
+    <div class="grid cols3">
+      <div><label>M-Ratio</label><div class="bigStat">${M.toFixed(1)}</div></div>
+      <div><label>Q-Ratio</label><div class="bigStat alt">${Q.toFixed(2)}</div></div>
+      <div><label>Zone</label><div style="font-weight:700;margin-top:6px">${zone}</div></div>
+    </div>
+    <p class="help">Cost per orbit: ${cost.toLocaleString()} · Big blinds: ${(stack/bb).toFixed(1)} BB</p>`;
+};
+document.getElementById('pCalc').onclick=()=>{
+  const pot=+pPot.value, call=+pCall.value, outs=+pOuts.value, cards=+pCards.value;
+  const req = call/(pot+call);
+  // rule of 2 and 4
+  const eqRough = cards===2 ? Math.min(outs*4, 100) : outs*2;
+  // exact
+  const exact = cards===2
+    ? 1 - ((47-outs)/47)*((46-outs)/46)
+    : outs/46;
+  const verdict = exact >= req ? '✅ Call — you have enough equity' : '❌ Fold — not getting the price';
+  document.getElementById('pOut').innerHTML=`
+    <div class="grid cols3">
+      <div><label>Required equity</label><div class="bigStat">${(req*100).toFixed(1)}%</div></div>
+      <div><label>Rough equity (rule 2/4)</label><div class="bigStat alt">${eqRough.toFixed(0)}%</div></div>
+      <div><label>Exact equity</label><div class="bigStat" style="color:var(--accent2)">${(exact*100).toFixed(1)}%</div></div>
+    </div>
+    <p style="margin-top:8px;font-weight:700">${verdict}</p>
+    <p class="help">Pot odds ${pot}:${call} → call ${call} to win ${pot+call}.</p>`;
+};
+
+</script>
+</body>
+</html>
