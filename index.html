@@ -274,7 +274,10 @@
 
   .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgba(7,13,11,.55);padding:3px 7px;border-radius:5px;border:1px solid var(--line);font-size:11px;color:var(--muted)}
 
-  footer{padding:22px;text-align:center;color:var(--muted);font-size:12px}
+  footer{padding:28px 16px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:24px}
+  footer nav{display:flex;justify-content:center;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+  footer a{color:var(--muted);text-decoration:none;font-weight:600;transition:color .2s}
+  footer a:hover{color:var(--accent)}
 
   .bigStat{
     font-size:clamp(26px,7vw,34px);font-weight:800;color:var(--accent);
@@ -299,6 +302,18 @@
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:6px}
   ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}
+
+  /* Hint banner */
+  .hint{
+    display:flex;gap:12px;align-items:flex-start;
+    background:linear-gradient(135deg,rgba(122,107,255,.12),rgba(62,224,143,.08));
+    border:1px solid rgba(122,107,255,.25);
+    border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.5;
+  }
+  .hint .hintIcon{font-size:20px;flex:0 0 auto;line-height:1.2}
+  .hint a{color:var(--accent);font-weight:700;text-decoration:none;border-bottom:1px dashed rgba(62,224,143,.5)}
+  .hint a:hover{color:#fff;border-bottom-color:#fff}
+  .hint em{color:var(--accent2);font-style:normal;font-weight:700}
 
   /* Mode picker */
   .modePicker{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:6px}
@@ -335,21 +350,34 @@
   .switch input:checked + span{background:rgba(62,224,143,.25);border-color:var(--accent)}
   .switch input:checked + span::before{transform:translateX(18px);background:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
 
-  /* Editable level rows */
+  /* Editable level rows — table scrolls horizontally on small screens, inputs stay readable */
+  #sLevels{font-size:15px}
+  .levelsTbl table{min-width:560px}
   .sLvlInput{
-    width:100%;background:transparent;border:1px solid transparent;color:var(--ink);
-    padding:5px 7px;border-radius:6px;font-variant-numeric:tabular-nums;font-size:13px;
+    width:100%;min-width:62px;background:rgba(7,13,11,.35);border:1px solid var(--line);color:var(--ink);
+    padding:9px 10px;border-radius:8px;font-variant-numeric:tabular-nums;font-size:16px;font-weight:600;
+    text-align:right;
     transition:all .15s;
   }
-  .sLvlInput:hover{border-color:var(--line)}
-  .sLvlInput:focus{border-color:var(--accent);background:rgba(7,13,11,.6);box-shadow:0 0 0 3px rgba(62,224,143,.1)}
+  .sLvlInput:hover{border-color:var(--line2);background:rgba(7,13,11,.55)}
+  .sLvlInput:focus{border-color:var(--accent);background:rgba(7,13,11,.7);box-shadow:0 0 0 3px rgba(62,224,143,.12)}
+  /* Trim spinner arrows that take valuable width on mobile */
+  .sLvlInput::-webkit-outer-spin-button,
+  .sLvlInput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .sLvlInput{-moz-appearance:textfield}
+  #sLevels td{padding:6px 6px}
   .delLvl{
-    background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;
-    padding:4px 8px;border-radius:6px;transition:all .15s;
+    background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer;font-size:18px;
+    padding:6px 10px;border-radius:8px;transition:all .15s;line-height:1;
   }
-  .delLvl:hover{color:var(--danger);background:rgba(255,93,108,.1)}
+  .delLvl:hover{color:var(--danger);background:rgba(255,93,108,.1);border-color:rgba(255,93,108,.25)}
   tr.breakRow{background:linear-gradient(90deg,rgba(255,209,102,.08),transparent);color:var(--accent2)}
   tr.breakRow .sLvlInput{color:var(--accent2);font-weight:700}
+  @media(max-width:600px){
+    .sLvlInput{font-size:16px;padding:10px 8px;min-width:56px}
+    #sLevels td{padding:5px 4px}
+    #sLevels td:first-child{padding-left:8px;color:var(--muted);font-weight:700}
+  }
 
   /* Side pot rows */
   .potRow{
@@ -403,6 +431,14 @@
 <!-- ============== TIMER ============== -->
 <section id="timer" class="panel active">
   <h2><span class="dot"></span>Blinds Timer</h2>
+  <div class="hint">
+    <span class="hintIcon">💡</span>
+    <div>
+      <b>Tip:</b> Want a different schedule? Head to the
+      <a href="#" data-goto="structure">Structure Builder</a> to pick a speed (Cris, Slow, Standard, Turbo, Hyper),
+      edit any level, save it to your browser, and click <em>↗ Use in Timer</em>.
+    </div>
+  </div>
   <div class="timerWrap">
     <div>
       <div class="clock" id="clock">
@@ -651,15 +687,32 @@
 
 </main>
 
-<footer>Built for kitchen-table tournaments. Open this file anywhere — works fully offline.</footer>
+<footer>
+  <nav>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="spenden.html">💚 Spenden</a>
+    <a href="https://github.com/sim-berg/pokertimer" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+  <div>Built for kitchen-table tournaments. Works fully offline once loaded.</div>
+</footer>
 
 <script>
 /* ============ TAB SWITCH ============ */
 const tabs = document.getElementById('tabs');
+function goTab(id){
+  const btn = tabs.querySelector(`button[data-tab="${id}"]`); if(!btn) return;
+  [...tabs.children].forEach(x=>x.classList.toggle('active', x===btn));
+  document.querySelectorAll('main > .panel').forEach(p=>p.classList.toggle('active', p.id===id));
+  btn.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+}
 tabs.addEventListener('click', e=>{
   const b = e.target.closest('button[data-tab]'); if(!b) return;
-  [...tabs.children].forEach(x=>x.classList.toggle('active', x===b));
-  document.querySelectorAll('main > .panel').forEach(p=>p.classList.toggle('active', p.id===b.dataset.tab));
+  goTab(b.dataset.tab);
+});
+document.addEventListener('click', e=>{
+  const a = e.target.closest('a[data-goto]'); if(!a) return;
+  e.preventDefault(); goTab(a.dataset.goto);
 });
 
 /* ============ BLINDS TIMER ============ */
